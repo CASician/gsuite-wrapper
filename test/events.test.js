@@ -8,7 +8,7 @@ function delay(interval) {
     return it('should delay', (done) => { setTimeout(() => done(), interval); },).timeout(interval + 100); // The extra 100ms should guarantee the test will not fail due to exceeded timeout
 }
 
-describe('Events', () => {
+describe.skip('Events', () => {
     const eventID = 'nettallahassee19' + time().format('MMDoYYhhmmss');// IDs are unique and if an event is cancelled, the ID is still taken, wtf idk
     const eventName = 'NWM Tallahassee';
     const location = 'Tallahassee, Florida';

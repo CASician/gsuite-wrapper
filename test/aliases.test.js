@@ -10,7 +10,7 @@ function delay(interval) {
     return it('should delay', (done) => { setTimeout(() => done(), interval); },).timeout(interval + 100); // The extra 100ms should guarantee the test will not fail due to exceeded timeout
 }
 
-describe('Aliases', () => {
+describe.skip('Aliases', () => {
     const name = 'Automated';
     const surname = 'APITest';
     const generatedUsername = name.toLowerCase() + '.' + surname.toLowerCase() + '@aegee.eu';

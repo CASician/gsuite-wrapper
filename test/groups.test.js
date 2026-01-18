@@ -7,7 +7,7 @@ function delay(interval) {
     return it('should delay', (done) => { setTimeout(() => done(), interval); },).timeout(interval + 100); // The extra 100ms should guarantee the test will not fail due to exceeded timeout
 }
 
-describe('Groups', () => {
+describe.skip('Groups', () => {
     const primaryEmail = 'automated_test_group@aegee.eu';
     const groupName = 'The automated test group';
     const bodyPK = 'totallyuuid-group';

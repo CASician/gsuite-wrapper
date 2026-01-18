@@ -39,8 +39,8 @@ describe.skip('Redis', () => {
     //        Redis.get("ciao").then(res => {console.log(res); done()});
     //    });
 
-    it.skip('should FLUSH DB OMH', (done) => {
+   // it.skip('should FLUSH DB OMH', (done) => {
     // redis.get("ciao").then(res => {console.log(res); done();}) ;
-        Redis.flushdb().then((res) => { console.log(res); done(); });
-    });
+   //     Redis.flushdb().then((res) => { console.log(res); done(); });
+   // });
 });
