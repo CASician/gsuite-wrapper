@@ -7,16 +7,20 @@ const { runGsuiteOperation, gsuiteOperations } = require('../lib/google-suite');
 
 const redis = require('../lib/redis').db;
 
+// EXTRA FUNCTIONS! 
+
 function delay(interval) {
     return it('should delay', (done) => { setTimeout(() => done(), interval); },).timeout(interval + 100); // The extra 100ms should guarantee the test will not fail due to exceeded timeout
 }
 
 async function safeDeleteUser(deleteUserFn, getUserFn, { retries = 5, delayMs = 3000 } = {}) {
+  console.log("[SAFE DELET] Safely deleting user");
   for (let i = 0; i < retries; i++) {
     try {
       // 1. Try to delete
       result = await deleteUserFn();
-      console.log(result); 
+      console.log("[SAFE DELET] Result from Google: "); 
+      console.log(result);
       if ( result.success == true) return;
       // 2. Wait to ensure it's actually gone
       await waitForUserDeleted(getUserFn);
@@ -26,7 +30,7 @@ async function safeDeleteUser(deleteUserFn, getUserFn, { retries = 5, delayMs = 
       
       // If the backend says "not complete," it's not ready to delete yet.
       if (msg.includes("User creation is not complete") && i < retries - 1) {
-        console.log(`Cleanup Attempt ${i + 1} failed: Backend busy. Retrying...`);
+        console.log(`[SAFE DELET] Cleanup Attempt ${i + 1} failed: Backend busy. Retrying...`);
         await new Promise(r => setTimeout(r, delayMs));
         continue;
       }
@@ -44,10 +48,11 @@ async function safeDeleteUser(deleteUserFn, getUserFn, { retries = 5, delayMs = 
  * Resolves if status is 200. Retries if status is 404/409.
  */
 async function waitForUserReady(getUserFn, { retries = 5, delayMs = 2121 } = {}) {
+  console.log("[WAIT_FOR_USER] Is the user already created?");
   for (let i = 0; i < retries; i++) {
     try {
       await getUserFn();
-      console.log("User is ready!");
+      console.log("[WAIT_FOR_USER] User is ready!");
       return; 
     } catch (err) {
       // 1. Capture the error details
@@ -59,13 +64,13 @@ async function waitForUserReady(getUserFn, { retries = 5, delayMs = 2121 } = {})
       const isNotFound = status === 404 || message.includes("Resource Not Found");
       const isNotComplete = message.includes("User creation is not complete");
 
-      console.log(`Attempt ${i + 1}/${retries} failed: ${message}.`);
+      console.log(`[WAIT_FOR_USER] Attempt ${i + 1}/${retries} failed: ${message}.`);
 
       // 3. Decide whether to stop or keep going
       const shouldRetry = (isNotFound || isNotComplete) && i < retries - 1;
 
       if (!shouldRetry) {
-        console.error("Stopping retries. Final Error:", message);
+        console.error("[WAIT_FOR_USER] Stopping retries. Final Error:", message);
         throw err; // This is where it exits if it thinks it shouldn't retry
       }
 
@@ -80,6 +85,7 @@ async function waitForUserReady(getUserFn, { retries = 5, delayMs = 2121 } = {})
  * Resolves only when the API returns a 404 or 410.
  */
 async function waitForUserDeleted(getUserFn, { retries = 5, delayMs = 2211 } = {}) {
+  console.log("[WAIT_FOR_DELETION] Has the user been properly deleted?");
   for (let i = 0; i < retries; i++) {
     try {
       console.log(`waitForUserDeleted attempt: ${i}`);
@@ -88,7 +94,7 @@ async function waitForUserDeleted(getUserFn, { retries = 5, delayMs = 2211 } = {
       const user = await getUserFn();
 
       if (!user) { // If the API returns null or undefined
-        console.log("Success: User record is null (deleted).");
+        console.log("[WAIT_FOR_DELETION] Success: User record is null (deleted).");
         return;
       }
       
@@ -98,12 +104,12 @@ async function waitForUserDeleted(getUserFn, { retries = 5, delayMs = 2211 } = {
 
       // Success: 404 means it's gone
       if (status === 404 || status === 410 || message.includes("Resource Not Found")) {
-        console.log("Success: User is no longer found.");
+        console.log("[WAIT_FOR_DELETION] Success: User is no longer found.");
         return;
       }
 
       // Real error: If it's a 500 or Auth error, stop immediately
-      console.error(`Polling encountered a critical error: ${message}`);
+      console.error(`[WAIT_FOR_DELETION] Polling encountered an error: ${message}`);
       throw err;
     }
 
@@ -113,8 +119,10 @@ async function waitForUserDeleted(getUserFn, { retries = 5, delayMs = 2211 } = {
     }
   }
 
-  throw new Error('User still exists after 20 attempts. Check if the delete command was actually accepted.');
+  throw new Error('[WAIT_FOR_DELETION] User still exists after 5 attempts. Check if the delete command was actually accepted.');
 }
+
+// THE REAL TESTS! But first some variables. 
 
 describe('Accounts', () => {
     const name = 'Automated';
@@ -138,21 +146,23 @@ describe('Accounts', () => {
         userPK,
     };
 
+    // The function executed at the end of all the tests. 
     after('Remove user', async function () {
         this.timeout(60000);
 
         let keys = await redis.keys('*');
-        console.log("[CAS]: after script");
+        console.log("[ACCOUNT] after-script beginning");
+        console.log("[ACCOUNT] Redis Keys before deletion: ");
         console.log(keys);
 
         await waitForUserReady(() => runGsuiteOperation(gsuiteOperations.getAccount, data));
 //        const result = await runGsuiteOperation(gsuiteOperations.deleteAccount, data);
 //        await waitForUserDeleted(() => runGsuiteOperation(gsuiteOperations.getAccount, data));
+        console.log("[ACCOUNT] GsuiteOps: ");
         await safeDeleteUser(
             () => runGsuiteOperation(gsuiteOperations.deleteAccount, data),
             () => runGsuiteOperation(gsuiteOperations.getAccount, data)
         );
-        console.log("[CAS] GsuiteOps ");
 
         const userPrimaryEmail = generatedUsername;
         const userSecondaryEmail = email;
@@ -166,10 +176,14 @@ describe('Accounts', () => {
        //pip.del('primary:' + 'other_alias_for_test@aegee.eu', 'alias:' + generatedUsername); 
         await pip.exec((err, res) => { console.log(err); console.log(res); });
 
+        console.log("[ACCOUNT] Redis keys after deletion: ");
         keys = await redis.keys('*');
-        console.log(keys);
-        console.log("[CAS] Account deleted successfully");
+        console.log(keys?.length > 0 ? keys : 'No keys found: Redis is empty (Did Cris understand this right?)');
+        console.log("[ACCOUNT] Account deleted successfully");
+        console.log("[ACCOUNT] End after-script");
     });
+
+    // THE REAL TESTS!
 
     describe('POST /account', function () {
         it('Should add an account if valid', async () => {
