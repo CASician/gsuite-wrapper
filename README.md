@@ -19,3 +19,10 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+### Cri's notes
+The overall structure is as follows: 
+1. lib/google-suite.js -> direct interaction with google's api, manages AUTH. #FIXME
+1. lib/gsuite-wrapper.js -> wrapper of the previous. Error handler. #FIXME
+1. lib/server.js -> exposes the API. Links wrapper functions to API ports. MAIN ACTOR
+1. tests/ -> tests on the APIs exposed in server.js

@@ -202,7 +202,9 @@ describe('Accounts', () => {
             body.success.should.equal(true);
         });
 
-        it.skip('Should not add an account if already existing', async () => {
+        it('Should not add an account if already existing', async () => {
+            // When running this, you will see a Gsuite Error among the test lines. 
+            // Is this normal?
             const payload = JSON.parse(JSON.stringify(data));
 
             const res = await request({
@@ -215,9 +217,10 @@ describe('Accounts', () => {
             const body = res.body;
             res.statusCode.should.equal(409);
             body.success.should.equal(false);
+            body.message.should.equal("Entity already exists.");
         });
 
-        it.skip('Should not add an account if without primaryEmail', async () => {
+        it('Should not add an account if without primaryEmail', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             delete payload.primaryEmail;
 
@@ -233,7 +236,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if primaryEmail is empty', async () => {
+        it('Should not add an account if primaryEmail is empty', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             payload.primaryEmail = '';
 
@@ -249,7 +252,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if without secondaryEmail', async () => {
+        it('Should not add an account if without secondaryEmail', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             delete payload.secondaryEmail;
 
@@ -265,7 +268,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if secondaryEmail is empty', async () => {
+        it('Should not add an account if secondaryEmail is empty', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             payload.secondaryEmail = '';
 
@@ -281,7 +284,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if without password', async () => {
+        it('Should not add an account if without password', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             delete payload.password;
 
@@ -297,7 +300,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if password is empty', async () => {
+        it('Should not add an account if password is empty', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             payload.password = '';
 
@@ -313,7 +316,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if without antenna', async () => {
+        it('Should not add an account if without antenna', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             delete payload.antenna;
 
@@ -329,7 +332,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if antenna is empty', async () => {
+        it('Should not add an account if antenna is empty', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             payload.antenna = '';
 
@@ -345,7 +348,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if without name', async () => {
+        it('Should not add an account if without name', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             delete payload.name.givenName;
 
@@ -361,7 +364,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if name is empty', async () => {
+        it('Should not add an account if name is empty', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             payload.name.givenName = '';
 
@@ -377,7 +380,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if without surname', async () => {
+        it('Should not add an account if without surname', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             delete payload.name.familyName;
 
@@ -393,7 +396,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if surname is empty', async () => {
+        it('Should not add an account if surname is empty', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             payload.name.familyName = '';
 
@@ -409,7 +412,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if without userPK', async () => {
+        it('Should not add an account if without userPK', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             delete payload.userPK;
 
@@ -425,7 +428,7 @@ describe('Accounts', () => {
             body.success.should.equal(false);
         });
 
-        it.skip('Should not add an account if userPK is empty', async () => {
+        it('Should not add an account if userPK is empty', async () => {
             const payload = JSON.parse(JSON.stringify(data));
             payload.userPK = '';
 
@@ -444,9 +447,32 @@ describe('Accounts', () => {
 
     delay(2345);
 
-    xdescribe('GET /account', () => {
+    describe('GET /account', () => {
         it('Should list all accounts if valid', async () => {
-		echo("this test is empty");
+            const res = await request({
+                uri: '/account',
+                method: 'GET',
+                headers: { 'test-title': 'list all accounts' },
+            });
+            
+            const body = res.body;
+            res.statusCode.should.equal(200);
+            body.success.should.equal(true);
+        });
+
+        it.skip('Should get one account', async () => {
+            const payload = json.parse(JSON.stringify(data));
+
+            const res = await request({
+                uri: '/account', // #TODO there is no wrapper function for it. Check server and wrapper 
+                method: 'GET',
+                headers: { 'test-title': 'get one account' },
+                body: payload,
+            });
+            
+            const body = res.body;
+            res.statusCode.should.equal(200);
+            body.success.should.equal(true);
         });
     });
 });
