@@ -14,15 +14,15 @@ function delay(interval) {
 }
 
 async function safeDeleteUser(deleteUserFn, getUserFn, { retries = 5, delayMs = 3000 } = {}) {
-  console.log("[SAFE DELET] Safely deleting user");
+  console.log("[SAFE DELETE] Safely deleting user");
   for (let i = 0; i < retries; i++) {
     try {
       // 1. Try to delete
       result = await deleteUserFn();
-      console.log("[SAFE DELET] Result from Google: "); 
+      console.log("[SAFE DELETE] Result from Google: "); 
       console.log(result);
       if ( result.success == true) return;
-      // 2. Wait to ensure it's actually gone
+     // 2. Wait to ensure it's actually gone
       await waitForUserDeleted(getUserFn);
       return;
     } catch (err) {
@@ -30,7 +30,7 @@ async function safeDeleteUser(deleteUserFn, getUserFn, { retries = 5, delayMs = 
       
       // If the backend says "not complete," it's not ready to delete yet.
       if (msg.includes("User creation is not complete") && i < retries - 1) {
-        console.log(`[SAFE DELET] Cleanup Attempt ${i + 1} failed: Backend busy. Retrying...`);
+        console.log(`[SAFE DELETE] Cleanup Attempt ${i + 1} failed: Backend busy. Retrying...`);
         await new Promise(r => setTimeout(r, delayMs));
         continue;
       }
